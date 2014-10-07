@@ -99,12 +99,27 @@ HashTable<Key, T>::HashTable(){
 //Delete any dynamically allocated memory.
 template <class Key, class T>
 HashTable<Key, T>::~HashTable() {
-	//delete backingArray;
+	delete[] backingArray;
 }
 
 template <class Key, class T>
 unsigned long HashTable<Key, T>::calcIndex(Key k){
-	return hash(k) % backingArraySize;
+	if (backingArray[hash(k) % backingArraySize].k == k && !backingArray[hash(k) % backingArraySize].isDel && !backingArray[hash(k) % backingArraySize].isNull) {
+		return hash(k) % backingArraySize;
+	}
+	else {
+		for (unsigned long i = 0; i < backingArraySize; i++) {
+			if (backingArray[i].k == k && !backingArray[i].isDel && !backingArray[i].isNull) {
+				return i;
+			}
+			if (backingArray[i].isNull) {
+				return i;
+			}
+
+
+		}
+	}
+	return 0;
 }
 
 
@@ -114,17 +129,6 @@ void HashTable<Key, T>::add(Key k, T x){
 	if (!backingArray[position].isNull && !backingArray[position].isDel) { //if an item is already there
 		if (backingArray[position].k == k) { //if the keys are the same
 			backingArray[position].x = x;
-		}
-
-		else  { //linear probing
-			for (unsigned long i = 0; i < backingArraySize; i++) { //finding next index that is null
-				if (backingArray[i].isNull) {
-					backingArray[i].k = k;
-					backingArray[i].x = x;
-					numItems++;
-					break;
-				}
-			}
 		}
 
 	}
@@ -172,7 +176,7 @@ T HashTable<Key, T>::find(Key k){
 template <class Key, class T>
 bool HashTable<Key, T>::keyExists(Key k){
 	for (unsigned long i = 0; i < backingArraySize; i++) {
-		if (backingArray[i].k == k && !backingArray[i].isDel) {
+		if (backingArray[i].k == k && !backingArray[i].isDel && !backingArray[i].isNull) {
 			return true;
 		}
 	}
@@ -204,9 +208,10 @@ void HashTable<Key, T>::grow(){
 	for (unsigned long i = 0; i < oldBackingArraySize; i++) {
 		if (!oldBackingArray[i].isNull && !oldBackingArray[i].isDel) {
 			add(oldBackingArray[i].k, oldBackingArray[i].x);
+			numItems--;
 		}
 	}
-
-	delete oldBackingArray;
+	numRemoved = 0;
+	delete[] oldBackingArray;
 }
 
