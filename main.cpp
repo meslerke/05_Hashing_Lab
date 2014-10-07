@@ -1,3 +1,5 @@
+//Got help from my dad and used linked readings provided
+
 #include "hashPrimes.h"
 #include <string>
 unsigned long hash(std::string k);
