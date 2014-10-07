@@ -1,6 +1,5 @@
 #include "hashPrimes.h"
 #include <string>
-unsigned long hash(std::string k);
 
 #include "HashTable.h"
 
@@ -27,6 +26,7 @@ unsigned long hash(std::string k){
 //Check to make sure that numItems returns correct result on a fresh
 // instance of the LinkedList class
 void testCtor(){
+
   HashTable<std::string,int> testTable;
   if(testTable.size() == 0){
     std::cout << "SUCCESS: Fresh hash table has 0 items" << std::endl;
