@@ -99,7 +99,7 @@ HashTable<Key, T>::HashTable(){
 //Delete any dynamically allocated memory.
 template <class Key, class T>
 HashTable<Key, T>::~HashTable() {
-	delete backingArray;
+	delete[] backingArray;
 }
 
 template <class Key, class T>
