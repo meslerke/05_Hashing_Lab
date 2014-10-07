@@ -16,65 +16,65 @@
  */
 
 template <class Key, class T>
-class HashTable : public USet <Key, T> {
- private:
-  class HashRecord {
-  public:
-    Key k;
-    T x;
+class HashTable : public USet < Key, T > {
+private:
+	class HashRecord {
+	public:
+		Key k;
+		T x;
 
-    //If the slot in the hash table is totally empty, set this to true.
-    bool isNull;
+		//If the slot in the hash table is totally empty, set this to true.
+		bool isNull;
 
-    //If the slot used to have something in it, but doesn't now, set
-    // isDel to true, and isNull to false. isNull is only for slots
-    // that have never been used
-    bool isDel;
+		//If the slot used to have something in it, but doesn't now, set
+		// isDel to true, and isNull to false. isNull is only for slots
+		// that have never been used
+		bool isDel;
 
-    HashRecord() { isNull = true; isDel = false; };
-  };
+		HashRecord() { isNull = true; isDel = false; };
+	};
 
- public:
-  //See USet.h for documentation of these methods
-  virtual unsigned long size();
-  virtual void add(Key k, T x);
-  virtual void remove(Key k);
-  virtual T find(Key k);
-  virtual bool keyExists(Key k);
+public:
+	//See USet.h for documentation of these methods
+	virtual unsigned long size();
+	virtual void add(Key k, T x);
+	virtual void remove(Key k);
+	virtual T find(Key k);
+	virtual bool keyExists(Key k);
 
-  //Initialize all private member variables.
-  HashTable();
-  //Delete any dynamically allocated memory.
-  virtual ~HashTable();
+	//Initialize all private member variables.
+	HashTable();
+	//Delete any dynamically allocated memory.
+	virtual ~HashTable();
 
 private:
-  //A pointer to the array that holds the hash table data
-  HashRecord* backingArray;
+	//A pointer to the array that holds the hash table data
+	HashRecord* backingArray;
 
-  //Whenever numItems + numRemoved >= backingArraySize/2, call
-  // grow(). grow() should make a new backing array that is twice the
-  // size of the old one, similar to what we did in the ArrayQueue
-  // lab.
-  //Note: You cannot just loop through the old array and copy it to the
-  // new one! Since the backing array size has changed, each item will likely
-  // map to a different slot in the array. You may just want to use add()
-  // after initializing the new array.
-  void grow();
+	//Whenever numItems + numRemoved >= backingArraySize/2, call
+	// grow(). grow() should make a new backing array that is twice the
+	// size of the old one, similar to what we did in the ArrayQueue
+	// lab.
+	//Note: You cannot just loop through the old array and copy it to the
+	// new one! Since the backing array size has changed, each item will likely
+	// map to a different slot in the array. You may just want to use add()
+	// after initializing the new array.
+	void grow();
 
-  //This helper method should take a key, and return the index for that
-  // item within the hash table. If the item already exists, return the
-  // index of the existing item. If the item doesn't exist, return the index
-  // where it OUGHT to be. This function can then be used as a helper method in
-  // your other methods.
-  unsigned long calcIndex(Key k);
+	//This helper method should take a key, and return the index for that
+	// item within the hash table. If the item already exists, return the
+	// index of the existing item. If the item doesn't exist, return the index
+	// where it OUGHT to be. This function can then be used as a helper method in
+	// your other methods.
+	unsigned long calcIndex(Key k);
 
-  unsigned long numItems; //Number of items in the hash table
+	unsigned long numItems; //Number of items in the hash table
 
-  //Note: Ordinarily, these OUGHT to be private. In this case I have
-  // made them public for easy of testing.
- public:
-  unsigned long numRemoved; //Number of slots that have been removed but not re-used. Those that have isDel == true
-  unsigned long backingArraySize;
+	//Note: Ordinarily, these OUGHT to be private. In this case I have
+	// made them public for easy of testing.
+public:
+	unsigned long numRemoved; //Number of slots that have been removed but not re-used. Those that have isDel == true
+	unsigned long backingArraySize;
 };
 
 
@@ -86,53 +86,127 @@ private:
 // remove
 #include <string>
 
+
+//Initialize all private member variables.
 template <class Key, class T>
-HashTable<Key,T>::HashTable(){
-  //TODO
+HashTable<Key, T>::HashTable(){
+	backingArraySize = hashPrimes[0];
+	backingArray = new HashRecord[backingArraySize];
+	numItems = 0;
+	numRemoved = 0;
+}
+
+//Delete any dynamically allocated memory.
+template <class Key, class T>
+HashTable<Key, T>::~HashTable() {
+	delete backingArray;
 }
 
 template <class Key, class T>
-HashTable<Key,T>::~HashTable() {
-  //TODO
+unsigned long HashTable<Key, T>::calcIndex(Key k){
+	return hash(k) % backingArraySize;
 }
 
-template <class Key, class T>
-unsigned long HashTable<Key,T>::calcIndex(Key k){
-  //TODO
-  return numItems; //This indicates failure, since it is an impossible value
-}
 
 template <class Key, class T>
-void HashTable<Key,T>::add(Key k, T x){
-  //TODO
+void HashTable<Key, T>::add(Key k, T x){
+	unsigned long position = calcIndex(k);
+	if (!backingArray[position].isNull && !backingArray[position].isDel) { //if an item is already there
+		if (backingArray[position].k == k) { //if the keys are the same
+			backingArray[position].x = x;
+		}
+
+		else  { //linear probing
+			for (unsigned long i = 0; i < backingArraySize; i++) { //finding next index that is null
+				if (backingArray[i].isNull) {
+					backingArray[i].k = k;
+					backingArray[i].x = x;
+					numItems++;
+					break;
+				}
+			}
+		}
+
+	}
+	else if (!backingArray[position].isNull && backingArray[position].isDel) { //if item at position is marked to delete
+		backingArray[position].x = x;
+		backingArray[position].k = k;
+		backingArray[position].isDel = false;
+		numRemoved--;
+		numItems++;
+	}
+	else { //if it is null
+		backingArray[position].isNull = false;
+		numItems++;
+		if (numItems + numRemoved >= backingArraySize / 2) {
+			grow();
+		}
+		backingArray[position].k = k;
+		backingArray[position].x = x;
+	}
+
 }
 
-template <class Key, class T>
-void HashTable<Key,T>::remove(Key k){
-  //TODO
-}
 
 template <class Key, class T>
-T HashTable<Key,T>::find(Key k){
-  //TODO
-  T dummy;
-  return dummy;
+void HashTable<Key, T>::remove(Key k){
+	if (keyExists(k)) {
+		backingArray[calcIndex(k)].isDel = true;
+		numRemoved++;
+		numItems--;
+	}
 }
 
-template <class Key, class T>
-bool HashTable<Key,T>::keyExists(Key k){
-  //TODO
-  return false;
-}
 
 template <class Key, class T>
-unsigned long HashTable<Key,T>::size(){
-  //TODO
-  return 0;
+T HashTable<Key, T>::find(Key k){
+	for (unsigned long i = 0; i < backingArraySize; i++) {
+		if (backingArray[i].k == k) {
+			return backingArray[i].x;
+		}
+	}
+	throw std::string("No such item was found with key " + k);
 }
 
+
 template <class Key, class T>
-void HashTable<Key,T>::grow(){
-  //TODO
+bool HashTable<Key, T>::keyExists(Key k){
+	for (unsigned long i = 0; i < backingArraySize; i++) {
+		if (backingArray[i].k == k && !backingArray[i].isDel) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
+template <class Key, class T>
+unsigned long HashTable<Key, T>::size(){
+	return numItems;
+}
+
+
+template <class Key, class T>
+void HashTable<Key, T>::grow(){
+	HashRecord* oldBackingArray = backingArray; //create a pointer that points to the original array
+	unsigned long oldBackingArraySize = backingArraySize; //variable that holds size of original array
+
+	for (int i = 0; i < NUM_HASH_PRIMES; i++) { //increase backingArrayAize using hashPrimes[]
+		if (hashPrimes[i] > backingArraySize) {
+			backingArraySize = hashPrimes[i];
+			break;
+		}
+	}
+
+	backingArray = new HashRecord[backingArraySize]; //make backing array point to a new array
+
+	//switch over all items and keys from oldbackingArray to backingArray
+	for (unsigned long i = 0; i < oldBackingArraySize; i++) {
+		if (!oldBackingArray[i].isNull && !oldBackingArray[i].isDel) {
+			add(oldBackingArray[i].k, oldBackingArray[i].x);
+		}
+	}
+
+	delete oldBackingArray;
 }
 
