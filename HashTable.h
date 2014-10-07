@@ -207,6 +207,6 @@ void HashTable<Key, T>::grow(){
 		}
 	}
 
-	delete oldBackingArray;
+	delete oldBackingArray[];
 }
 
