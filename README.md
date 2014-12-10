@@ -21,15 +21,15 @@ Questions
 
 #### 1. Which of the above requirements work, and which do not? For each requirement, write a brief response.
 
-1. TODO
-2. TODO
-3. TODO
-4. TODO
+1. These should work and all be O(1)
+2. Add works by using linear probing and O(1) except when 'grow' is called
+3. 'grow' should be O(n) but I can't seem to get the tester for grow to work. It gives an error and I'm not sure what the code is doing to test it for me to be able to figure out the problem with my code.
+4. Working
 
 #### 2. I decided to use two function (`keyExists` and `find`) to enable lookup of keys. Another option would have been to have `find` return a `T*`, which would be `NULL` if an item with matching key is not found. Which design do you think would be better? Explain your reasoning. You may notice that the designers of C++ made the same decision I did when they designed http://www.cplusplus.com/reference/unordered_map/unordered_map/
 
-TODO
+I think that having 'find' return the value like it is now is better than returning a pointer. This is because with a pointer, you would have to perform another function to retrieve the value, rather than just returning the value in the first place.
 
 #### 3. What is one question that confused you about this exercise, or one piece of advice you would share with students next semester?
 
-TODO
+Don't be afraid to ask questions when you need help!
