@@ -108,15 +108,13 @@ unsigned long HashTable<Key, T>::calcIndex(Key k){
 		return hash(k) % backingArraySize;
 	}
 	else {
-		for (unsigned long i = 0; i < backingArraySize; i++) {
+		for (unsigned long i = hash(k) % backingArraySize; i < backingArraySize; i++) {
 			if (backingArray[i].k == k && !backingArray[i].isDel && !backingArray[i].isNull) {
 				return i;
 			}
 			if (backingArray[i].isNull) {
 				return i;
 			}
-
-
 		}
 	}
 	return 0;
@@ -164,23 +162,21 @@ void HashTable<Key, T>::remove(Key k){
 
 template <class Key, class T>
 T HashTable<Key, T>::find(Key k){
-	for (unsigned long i = 0; i < backingArraySize; i++) {
-		if (backingArray[i].k == k) {
-			return backingArray[i].x;
-		}
+	if (!backingArray[calcIndex(k)].isNull) {
+		return backingArray[calcIndex(k)].x;
 	}
+		
 	throw std::string("No such item was found with key " + k);
 }
 
 
 template <class Key, class T>
 bool HashTable<Key, T>::keyExists(Key k){
-	for (unsigned long i = 0; i < backingArraySize; i++) {
-		if (backingArray[i].k == k && !backingArray[i].isDel && !backingArray[i].isNull) {
-			return true;
-		}
+	if (backingArray[calcIndex(k)].isNull) {
+		return false;
 	}
-	return false;
+
+	return true;
 }
 
 
@@ -195,7 +191,7 @@ void HashTable<Key, T>::grow(){
 	HashRecord* oldBackingArray = backingArray; //create a pointer that points to the original array
 	unsigned long oldBackingArraySize = backingArraySize; //variable that holds size of original array
 
-	for (int i = 0; i < NUM_HASH_PRIMES; i++) { //increase backingArrayAize using hashPrimes[]
+	for (int i = 0; i < NUM_HASH_PRIMES; i++) { //increase backingArraySize using hashPrimes[]
 		if (hashPrimes[i] > backingArraySize) {
 			backingArraySize = hashPrimes[i];
 			break;
